@@ -1,4 +1,5 @@
 import math
+import pgzrun
 
 # Vector class needed for calculations
 class Vector:
@@ -33,6 +34,7 @@ class Vector:
 
 # Object Class for all the planets, stars, etc
 class Object:
+    letterList = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"]
     def __init__(self, name, colour, mass, radius, currentPos = Vector(), currentVel = Vector()):
         self.name: str = name
         self.colour: str = colour
@@ -52,6 +54,19 @@ class Object:
     def GetPos(self) -> Vector:
         return self.currentPos
 
+    def GetColour(self):
+        return self.colour
+
+    def SetColour(self,colour):
+        if(colour[0] != "#" or len(colour) != 7):
+            raise "Colour needs to be formatted correctly"
+        else:
+            for char in colour[1:]:
+                if char.lower() not in self.letterList:
+                    raise "Colours only go from 0-f"
+
+
+
     # Returns the current mass as a float
     def GetMass(self) -> float:
         return self.mass
@@ -60,31 +75,35 @@ class Object:
     def Update(self) -> None:
         return
 
-# Vector Test
 
-# Tests the non "__x__" functions and initialisation
-vector1 = Vector(3, 4)
-
-print("x:", vector1.x, ", y:", vector1.y)
-print(vector1.GetVector())
-print(vector1.GetMagnitude())
-print(vector1.GetNormalized().GetVector())
-
-# Tests the "__x__" functions
-vector2 = Vector(3, 4)
-
-vector3 = vector1 + vector2
-print(vector3.GetVector())
-vector3 = vector1 - vector2
-print(vector3.GetVector())
-
-# Object Test
 object1 = Object("earth","green",5972000000000000000000000, 6000000)
-print(
-    f"Name: {object1.name}\n"
-    f"Colour: {object1.colour}\n"
-    f"Mass: {object1.mass}\n"
-    f"Radius: {object1.radius}\n"
-    f"Current Position: {object1.currentPos.GetVector()}\n"
-    f"Current Velocity: {object1.currentVel.GetVector()}"
-)
+
+try:
+    object1.SetColour("orange")
+    print("Accepted")
+except:
+    print("Rejected")
+
+try:
+    object1.SetColour("#000000")
+    print("Accepted")
+except:
+    print("Rejected")
+
+try:
+    object1.SetColour("#555555")
+    print("Accepted")
+except:
+    print("Rejected")
+
+try:
+    object1.SetColour("#GGGGGG")
+    print("Accepted")
+except:
+    print("Rejected")
+
+try:
+    object1.SetColour("test")
+    print("Accepted")
+except:
+    print("Rejected")
