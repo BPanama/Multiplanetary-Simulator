@@ -1,9 +1,42 @@
 import math
+
 import pgzrun
 import pygame
+from pgzhelper import *
+import random
+import tkinter
+app = tkinter.Tk()
+width = app.winfo_screenwidth()
+height = app.winfo_screenheight()
+app.destroy()
+
+HEIGHT = height
+WIDTH = width
+"""
+planet = Actor("planet", (250,250))
+planet.scale = 0.01
+image = pygame.image.load('CarWhiteDragon256.png').convert_alpha()
+"""
+x = width/2
+y = height/2
+right = True
 
 
+def on_key_down(key):
+    if key == keys.F:
+        screen.surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+    elif key == keys.W:
+        screen.surface = pygame.display.set_mode((WIDTH, HEIGHT))
 
+def draw():
+    screen.fill("red")
+    screen.draw.filled_circle((x,y), 50, "blue")
+def update():
+    global x
+    global y
+    x += random.randint(-5, 5)
+    y += random.randint(-5,5)
+pgzrun.go()
 # Vector class needed for calculations
 class Vector:
     def __init__(self, x: float = 0, y: float = 0) -> None:
@@ -116,7 +149,7 @@ class Object:
     def Update(self) -> None:
         return
 
-
+"""
 #region Variable Tests
 
 object1 = Object("earth", "#ffffff", 5972000000000000000000000, 6000000)
@@ -219,3 +252,4 @@ except:
     print("Rejected")
 
 #endregion
+"""
