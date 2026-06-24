@@ -1,15 +1,27 @@
 import math
 import pgzrun
+import pygame
+
+
 
 # Vector class needed for calculations
 class Vector:
-    def __init__(self, x: float = 0, y: float = 0):
-        self.x: float = x
-        self.y: float = y
+    def __init__(self, x: float = 0, y: float = 0) -> None:
+        self.x: float = 0
+        self.y: float = 0
+        self.SetVector(x, y)
 
     # Returns the Vector as a list
     def GetVector(self) -> list[2]:
         return [self.x, self.y]
+
+    def SetVector(self,x,y) -> None:
+        try:
+            x,y = float(x),float(y)
+            self.x = x
+            self.y = y
+        except:
+            raise "Vector must be a string"
 
     # Returns the magnitude of the vector as a single float
     def GetMagnitude(self) -> float:
@@ -34,12 +46,16 @@ class Vector:
 
 # Object Class for all the planets, stars, etc
 class Object:
-    letterList = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"]
-    def __init__(self, name, colour, mass, radius, currentPos = Vector(), currentVel = Vector()):
+    letterList = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
+
+    def __init__(self, name, colour, mass, radius, currentPos=Vector(), currentVel=Vector()):
         self.name: str = name
-        self.colour: str = colour
-        self.mass: float = mass
-        self.radius: float = radius
+        self.colour: str = "#000000"
+        self.SetColour(colour)
+        self.mass: float = 10000
+        self.SetMass(mass)
+        self.radius: float = 1000
+        self.SetRadius(radius)
         self.currentPos: Vector = currentPos
         self.currentVel: Vector = currentVel
         self.force: Vector = Vector()
@@ -54,30 +70,57 @@ class Object:
     def GetPos(self) -> Vector:
         return self.currentPos
 
-    def GetColour(self):
+    def GetColour(self) -> str:
         return self.colour
 
-    def SetColour(self,colour):
-        if(colour[0] != "#" or len(colour) != 7):
+    # Makes sure colour variable is in format #xxxxxx where x is between 0 and f for a hexadecimal format
+    def SetColour(self, colour):
+        if (colour[0] != "#" or len(colour) != 7):
             raise "Colour needs to be formatted correctly"
         else:
             for char in colour[1:]:
                 if char.lower() not in self.letterList:
                     raise "Colours only go from 0-f"
 
-
-
     # Returns the current mass as a float
     def GetMass(self) -> float:
         return self.mass
+
+    # Makes sure the mass variable is a positive float
+    def SetMass(self, mass) -> None:
+        try:
+            mass = float(mass)
+            if (mass > 0):
+                self.mass = mass
+            else:
+                raise
+        except:
+            raise "Mass has to be a positive float"
+
+    # Returns the current radius as a float
+    def GetRadius(self) -> float:
+        return self.radius
+
+    # Makes sure the mass variable is a positive float
+    def SetRadius(self, radius) -> None:
+        try:
+            radius = float(radius)
+            if (radius > 0):
+                self.radius = radius
+            else:
+                raise
+        except:
+            raise "Mass has to be a positive float"
 
     # Updates the currentPos and currentVel of the object
     def Update(self) -> None:
         return
 
 
-object1 = Object("earth","green",5972000000000000000000000, 6000000)
+#region Variable Tests
 
+object1 = Object("earth", "#ffffff", 5972000000000000000000000, 6000000)
+print("\nColour Tests \n")
 try:
     object1.SetColour("orange")
     print("Accepted")
@@ -107,3 +150,72 @@ try:
     print("Accepted")
 except:
     print("Rejected")
+
+print("\nMass Tests \n")
+try:
+    object1.SetMass(0)
+    print("Accepted")
+except:
+    print("Rejected")
+try:
+    object1.SetMass(10000000000)
+    print("Accepted")
+except:
+    print("Rejected")
+try:
+    object1.SetMass(-5)
+    print("Accepted")
+except:
+    print("Rejected")
+try:
+    object1.SetMass("test")
+    print("Accepted")
+except:
+    print("Rejected")
+
+print("\nRadius Tests \n")
+try:
+    object1.SetRadius(0)
+    print("Accepted")
+except:
+    print("Rejected")
+try:
+    object1.SetRadius(10000000000)
+    print("Accepted")
+except:
+    print("Rejected")
+try:
+    object1.SetRadius(-5)
+    print("Accepted")
+except:
+    print("Rejected")
+try:
+    object1.SetRadius("test")
+    print("Accepted")
+except:
+    print("Rejected")
+
+print("\nVector Tests \n")
+
+try:
+    testVector = Vector(0,0)
+    print("Accepted")
+except:
+    print("Rejected")
+try:
+    testVector = Vector(100000, 100000)
+    print("Accepted")
+except:
+    print("Rejected")
+try:
+    testVector = Vector(-10, -10)
+    print("Accepted")
+except:
+    print("Rejected")
+try:
+    testVector = Vector("test", "test")
+    print("Accepted")
+except:
+    print("Rejected")
+
+#endregion
