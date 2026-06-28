@@ -2,9 +2,12 @@ import math
 
 import pgzrun
 import pygame
-from pgzhelper import *
+import time
 import random
 import tkinter
+
+from pgzero.constants import mouse
+
 app = tkinter.Tk()
 width = app.winfo_screenwidth()
 height = app.winfo_screenheight()
@@ -19,23 +22,48 @@ image = pygame.image.load('CarWhiteDragon256.png').convert_alpha()
 """
 x = width/2
 y = height/2
+xOffset = 0
+yOffset = 0
+scale = 1
 right = True
-
-
-def on_key_down(key):
-    if key == keys.F:
-        screen.surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
-    elif key == keys.W:
-        screen.surface = pygame.display.set_mode((WIDTH, HEIGHT))
+fullscreen = False
 
 def draw():
+    global fullscreen
+    if not fullscreen:
+        screen.surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+        fullscreen = True
     screen.fill("red")
-    screen.draw.filled_circle((x,y), 50, "blue")
+    screen.draw.filled_circle(((x + xOffset) ,(y + yOffset) ), 50 * scale, "blue")
+
+def on_mouse_down(pos,button):
+    global x,y,scale
+    scaleSpeed = 1.1
+    if button == mouse.WHEEL_UP:
+        xDiff = (x - pos[0]) * scaleSpeed
+        yDiff = (y - pos[1]) * scaleSpeed
+        x = pos[0] + xDiff
+        y = pos[1] + yDiff
+        scale *= scaleSpeed
+    if button == mouse.WHEEL_DOWN:
+        xDiff = (x - pos[0]) / scaleSpeed
+        yDiff = (y - pos[1]) / scaleSpeed
+        x = pos[0] + xDiff
+        y = pos[1] + yDiff
+        scale /= scaleSpeed
+def on_mouse_move(rel, buttons):
+    global x, y
+    if mouse.LEFT in buttons:
+        x += rel[0]
+        y += rel[1]
+        print(xOffset, yOffset)
+
+
 def update():
     global x
     global y
-    x += random.randint(-5, 5)
-    y += random.randint(-5,5)
+    x += random.randint(-5, 5) * scale
+    y += random.randint(-5,5) * scale
 pgzrun.go()
 # Vector class needed for calculations
 class Vector:
@@ -45,16 +73,15 @@ class Vector:
         self.SetVector(x, y)
 
     # Returns the Vector as a list
-    def GetVector(self) -> list[2]:
+    def GetVector(self):
         return [self.x, self.y]
 
     def SetVector(self,x,y) -> None:
-        try:
-            x,y = float(x),float(y)
+        if( (type(x) == int or type(x) == float) and (type(y) == int or type(y) == float) ):
             self.x = x
             self.y = y
-        except:
-            raise "Vector must be a string"
+        else:
+            raise "Vectors need to be a float or int"
 
     # Returns the magnitude of the vector as a single float
     def GetMagnitude(self) -> float:
