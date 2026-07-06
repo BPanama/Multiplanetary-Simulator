@@ -90,7 +90,7 @@ class Object:
                 vectorForce += dir * force
 
         acceleration = vectorForce / self.mass
-        self.nextVel = self.currentVel + acceleration * time
+        self.nextVel =  self.currentVel + acceleration * time
 
 
     # Returns current position as a Vector
@@ -169,8 +169,9 @@ objects.append(Object("One","#ffdf88", 1000000,500,Vector(5000,3000)))"""
 """for i in range(200):
     objects.append(Object(str(i),"#ffffff",random.randint(5000,5000000000),random.randint(200,1000),Vector(random.randint(-10000,10000),random.randint(-10000,10000))))"""
 
-objects.append(Object("One","#ffffff",1,2,Vector(3,0),Vector(0,0.1)))
-objects.append(Object("Two","#ffffff",1,2,Vector(-3,0),Vector(0,-0.1)))
+objects.append(Object("One","#ffffff",3000000000000000000000000000000,20000000000,Vector(28867513459.48,0),Vector(0,63281.75)))
+objects.append(Object("Two","#ffffff",3000000000000000000000000000000,20000000000,Vector(-14433756729.74,25000000000.0),Vector(-54803.60,-31640.88)))
+objects.append(Object("Three","#ffffff",3000000000000000000000000000000,20000000000,Vector(-14433756729.74,-25000000000.0),Vector(54803.60,-31640.88)))
 
 # Draws the objects onto the screen
 def draw():
@@ -217,10 +218,11 @@ def on_mouse_move(rel, buttons):
 
 # Updates the simulation
 def update(time):
-    for object in objects:
-        object.CalculateNextPos(time*100)
-    for object in objects:
-        object.Update(time*100)
+    for i in range(100000):
+        for object in objects:
+            object.CalculateNextPos(0.01)
+        for object in objects:
+            object.Update(0.01)
 
 pgzrun.go()
 
