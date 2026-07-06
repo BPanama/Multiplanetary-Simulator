@@ -8,63 +8,7 @@ import tkinter
 
 from pgzero.constants import mouse
 
-app = tkinter.Tk()
-width = app.winfo_screenwidth()
-height = app.winfo_screenheight()
-app.destroy()
 
-HEIGHT = height
-WIDTH = width
-"""
-planet = Actor("planet", (250,250))
-planet.scale = 0.01
-image = pygame.image.load('CarWhiteDragon256.png').convert_alpha()
-"""
-x = width/2
-y = height/2
-xOffset = 0
-yOffset = 0
-scale = 1
-right = True
-fullscreen = False
-
-def draw():
-    global fullscreen
-    if not fullscreen:
-        screen.surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
-        fullscreen = True
-    screen.fill("red")
-    screen.draw.filled_circle(((x + xOffset) ,(y + yOffset) ), 50 * scale, "blue")
-
-def on_mouse_down(pos,button):
-    global x,y,scale
-    scaleSpeed = 1.1
-    if button == mouse.WHEEL_UP:
-        xDiff = (x - pos[0]) * scaleSpeed
-        yDiff = (y - pos[1]) * scaleSpeed
-        x = pos[0] + xDiff
-        y = pos[1] + yDiff
-        scale *= scaleSpeed
-    if button == mouse.WHEEL_DOWN:
-        xDiff = (x - pos[0]) / scaleSpeed
-        yDiff = (y - pos[1]) / scaleSpeed
-        x = pos[0] + xDiff
-        y = pos[1] + yDiff
-        scale /= scaleSpeed
-def on_mouse_move(rel, buttons):
-    global x, y
-    if mouse.LEFT in buttons:
-        x += rel[0]
-        y += rel[1]
-        print(xOffset, yOffset)
-
-
-def update():
-    global x
-    global y
-    x += random.randint(-5, 5) * scale
-    y += random.randint(-5,5) * scale
-pgzrun.go()
 # Vector class needed for calculations
 class Vector:
     def __init__(self, x: float = 0, y: float = 0) -> None:
@@ -110,7 +54,7 @@ class Object:
 
     def __init__(self, name, colour, mass, radius, currentPos=Vector(), currentVel=Vector()):
         self.name: str = name
-        self.colour: str = "#000000"
+        self.colour: str = (00,00,00)
         self.SetColour(colour)
         self.mass: float = 10000
         self.SetMass(mass)
@@ -141,6 +85,7 @@ class Object:
             for char in colour[1:]:
                 if char.lower() not in self.letterList:
                     raise "Colours only go from 0-f"
+            self.colour = colour
 
     # Returns the current mass as a float
     def GetMass(self) -> float:
@@ -175,6 +120,68 @@ class Object:
     # Updates the currentPos and currentVel of the object
     def Update(self) -> None:
         return
+
+app = tkinter.Tk()
+width = app.winfo_screenwidth()
+height = app.winfo_screenheight()
+app.destroy()
+
+HEIGHT = height
+WIDTH = width
+"""
+planet = Actor("planet", (250,250))
+planet.scale = 0.01
+image = pygame.image.load('CarWhiteDragon256.png').convert_alpha()
+"""
+x = width/2
+y = height/2
+xOffset = 0
+yOffset = 0
+scale = 0.0001
+right = True
+fullscreen = False
+objects = []
+objects.append(Object("earth", "#ff00ff", 5972000000000000000000000, 6000000))
+def draw():
+    global fullscreen
+    if not fullscreen:
+        screen.surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+        fullscreen = True
+    screen.fill("red")
+    for object in objects:
+        screen.draw.filled_circle((object.GetPos().x ,object.GetPos().y ), object.GetRadius() * scale,object.GetColour())
+
+def on_mouse_down(pos,button):
+    global scale
+    scaleSpeed = 1.1
+    if button == mouse.WHEEL_UP:
+        for object in objects:
+            xDiff = (object.GetPos().x - pos[0]) * scaleSpeed
+            yDiff = (object.GetPos().y - pos[1]) * scaleSpeed
+            object.currentPos.x = pos[0] + xDiff
+            object.currentPos.y = pos[1] + yDiff
+        scale *= scaleSpeed
+    if button == mouse.WHEEL_DOWN:
+        for object in objects:
+            xDiff = (object.GetPos().x - pos[0]) / scaleSpeed
+            yDiff = (object.GetPos().y - pos[1]) / scaleSpeed
+            object.currentPos.x = pos[0] + xDiff
+            object.currentPos.y = pos[1] + yDiff
+        scale /= scaleSpeed
+def on_mouse_move(rel, buttons):
+    if mouse.LEFT in buttons:
+        for object in objects:
+            object.currentPos.x += rel[0]
+            object.currentPos.y += rel[1]
+        print(xOffset, yOffset)
+
+
+def update():
+    global x
+    global y
+    x += random.randint(-5, 5) * scale
+    y += random.randint(-5,5) * scale
+pgzrun.go()
 
 """
 #region Variable Tests
