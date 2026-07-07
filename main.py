@@ -48,6 +48,17 @@ class Vector:
         y = self.y - other.y
         return Vector(x, y)
 
+    def __mul__(self, other):
+        x = self.x * other
+        y = self.y * other
+        return Vector(x,y)
+
+    def __truediv__(self, other):
+        x = self.x / other
+        y = self.y / other
+        return Vector(x,y)
+
+
 # Object Class for all the planets, stars, etc
 class Object:
     letterList = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
@@ -68,7 +79,19 @@ class Object:
 
     # Calculates the forces and gets the next position
     def CalculateNextPos(self) -> None:
-        return
+        G = 0.00000000006674
+        vectorForce =  Vector(0,0)
+        for object in objects:
+            difference = object.GetPos() - self.GetPos()
+
+            distance = difference.GetMagnitude()
+            if distance != 0:
+                dir = difference.GetNormalized()
+                force = (G * self.GetMass() * object.GetMass())/(distance ** 2)
+                vectorForce += dir * force
+        acceleration = vectorForce / self.mass
+        self.nextVel = self.currentVel + acceleration
+
 
     # Returns current position as a Vector
     def GetPos(self) -> Vector:
@@ -119,7 +142,8 @@ class Object:
 
     # Updates the currentPos and currentVel of the object
     def Update(self) -> None:
-        return
+        self.currentVel = self.nextVel
+        self.currentPos += self.currentVel
 
 app = tkinter.Tk()
 width = app.winfo_screenwidth()
@@ -141,13 +165,14 @@ scale = 0.0001
 right = True
 fullscreen = False
 objects = []
-objects.append(Object("earth", "#ff00ff", 5972000000000000000000000, 6000000))
+objects.append(Object("earth", "#00ff00", 5972000000000000, 6000000))
+objects.append(Object("Sun","#ffdf22", 1989000000000000000,695700000,Vector(100000,0)))
 def draw():
     global fullscreen
     if not fullscreen:
         screen.surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
         fullscreen = True
-    screen.fill("red")
+    screen.fill("#000010")
     for object in objects:
         screen.draw.filled_circle((object.GetPos().x ,object.GetPos().y ), object.GetRadius() * scale,object.GetColour())
 
@@ -168,19 +193,27 @@ def on_mouse_down(pos,button):
             object.currentPos.x = pos[0] + xDiff
             object.currentPos.y = pos[1] + yDiff
         scale /= scaleSpeed
+    if mouse.RIGHT == button:
+        for object in objects:
+            object.CalculateNextPos()
+        for object in objects:
+            object.Update()
 def on_mouse_move(rel, buttons):
     if mouse.LEFT in buttons:
         for object in objects:
             object.currentPos.x += rel[0]
             object.currentPos.y += rel[1]
-        print(xOffset, yOffset)
 
 
-def update():
+
+
+def update(time):
     global x
     global y
     x += random.randint(-5, 5) * scale
     y += random.randint(-5,5) * scale
+    print(time)
+
 pgzrun.go()
 
 """
@@ -287,3 +320,4 @@ except:
 
 #endregion
 """
+
