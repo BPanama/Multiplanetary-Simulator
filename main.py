@@ -76,6 +76,7 @@ class Object:
         self.force: Vector = Vector()
         self.nextPos: Vector = Vector()
         self.nextVel: Vector = Vector()
+        self.offset: Vector = Vector()
 
     # Calculates the forces and gets the next position
     def CalculateNextPos(self) -> None:
@@ -174,24 +175,26 @@ def draw():
         fullscreen = True
     screen.fill("#000010")
     for object in objects:
-        screen.draw.filled_circle((object.GetPos().x ,object.GetPos().y ), object.GetRadius() * scale,object.GetColour())
+        screen.draw.filled_circle((object.GetPos() + object.offset ).GetVector(), object.GetRadius() * scale,object.GetColour())
 
 def on_mouse_down(pos,button):
     global scale
     scaleSpeed = 1.1
     if button == mouse.WHEEL_UP:
         for object in objects:
-            xDiff = (object.GetPos().x - pos[0]) * scaleSpeed
-            yDiff = (object.GetPos().y - pos[1]) * scaleSpeed
-            object.currentPos.x = pos[0] + xDiff
-            object.currentPos.y = pos[1] + yDiff
+            xDiff = (object.GetPos().x + object.offset.x - pos[0]) * scaleSpeed
+            yDiff = (object.GetPos().y + object.offset.y - pos[1]) * scaleSpeed
+            object.offset.x = object.GetPos().x + pos[0] + xDiff
+            object.offset.y = object.GetPos().y + pos[1] + yDiff
         scale *= scaleSpeed
     if button == mouse.WHEEL_DOWN:
         for object in objects:
-            xDiff = (object.GetPos().x - pos[0]) / scaleSpeed
-            yDiff = (object.GetPos().y - pos[1]) / scaleSpeed
-            object.currentPos.x = pos[0] + xDiff
-            object.currentPos.y = pos[1] + yDiff
+            xDiff = (object.GetPos().x + object.offset.x - pos[0]) / scaleSpeed
+            yDiff = (object.GetPos().y + object.offset.y - pos[1]) / scaleSpeed
+            print(f"{object.GetPos().GetVector()}\n{object.offset.GetVector()}\n{pos}\n{[xDiff,yDiff]}\n" )
+            object.offset.x = object.GetPos().x + pos[0] + xDiff
+            object.offset.y = object.GetPos().y + pos[1] + yDiff
+
         scale /= scaleSpeed
     if mouse.RIGHT == button:
         for object in objects:
@@ -201,8 +204,8 @@ def on_mouse_down(pos,button):
 def on_mouse_move(rel, buttons):
     if mouse.LEFT in buttons:
         for object in objects:
-            object.currentPos.x += rel[0]
-            object.currentPos.y += rel[1]
+            object.offset.x += rel[0]
+            object.offset.y += rel[1]
 
 
 
@@ -212,7 +215,7 @@ def update(time):
     global y
     x += random.randint(-5, 5) * scale
     y += random.randint(-5,5) * scale
-    print(time)
+
 
 pgzrun.go()
 
@@ -320,4 +323,3 @@ except:
 
 #endregion
 """
-
