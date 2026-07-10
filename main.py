@@ -6,8 +6,6 @@ import time
 import random
 import tkinter
 
-from pgzero.constants import mouse
-
 
 # Vector class needed for calculations
 class Vector:
@@ -76,10 +74,11 @@ class Object:
         self.force: Vector = Vector()
         self.nextPos: Vector = Vector()
         self.nextVel: Vector = Vector()
-        self.offset: Vector = Vector()
+        self.relPos: Vector = currentPos
 
     # Calculates the forces and gets the next position
-    def CalculateNextPos(self) -> None:
+    def CalculateNextPos(self,time) -> None:
+
         G = 0.00000000006674
         vectorForce =  Vector(0,0)
         for object in objects:
@@ -90,8 +89,10 @@ class Object:
                 dir = difference.GetNormalized()
                 force = (G * self.GetMass() * object.GetMass())/(distance ** 2)
                 vectorForce += dir * force
+
         acceleration = vectorForce / self.mass
-        self.nextVel = self.currentVel + acceleration
+        self.nextVel = self.currentVel + acceleration * time/100000000
+        print(self.nextVel.GetVector() if self.name == "earth" else "")
 
 
     # Returns current position as a Vector
@@ -132,19 +133,19 @@ class Object:
 
     # Makes sure the mass variable is a positive float
     def SetRadius(self, radius) -> None:
-        try:
-            radius = float(radius)
-            if (radius > 0):
-                self.radius = radius
-            else:
-                raise
-        except:
-            raise "Mass has to be a positive float"
+        if(type(radius) != float and type(radius) != int and radius <= 0):
+            print("No")
+        else:
+            self.radius = radius
 
     # Updates the currentPos and currentVel of the object
     def Update(self) -> None:
+
+
         self.currentVel = self.nextVel
         self.currentPos += self.currentVel
+        self.relPos += self.currentVel * scale
+
 
 app = tkinter.Tk()
 width = app.winfo_screenwidth()
@@ -166,8 +167,8 @@ scale = 0.0001
 right = True
 fullscreen = False
 objects = []
-objects.append(Object("earth", "#00ff00", 5972000000000000, 6000000))
-objects.append(Object("Sun","#ffdf22", 1989000000000000000,695700000,Vector(100000,0)))
+objects.append(Object("earth", "#00ff00", 5972000000000000000000000, 6000000))
+objects.append(Object("Sun","#ffdf22", 1989000000000000000000000000000,695700000,Vector(100000,0)))
 def draw():
     global fullscreen
     if not fullscreen:
@@ -175,47 +176,42 @@ def draw():
         fullscreen = True
     screen.fill("#000010")
     for object in objects:
-        screen.draw.filled_circle((object.GetPos() + object.offset ).GetVector(), object.GetRadius() * scale,object.GetColour())
+        screen.draw.filled_circle(object.relPos.GetVector(), object.GetRadius() * scale,object.GetColour())
 
 def on_mouse_down(pos,button):
     global scale
     scaleSpeed = 1.1
     if button == mouse.WHEEL_UP:
         for object in objects:
-            xDiff = (object.GetPos().x + object.offset.x - pos[0]) * scaleSpeed
-            yDiff = (object.GetPos().y + object.offset.y - pos[1]) * scaleSpeed
-            object.offset.x = object.GetPos().x + pos[0] + xDiff
-            object.offset.y = object.GetPos().y + pos[1] + yDiff
+            xDiff = (object.relPos.x - pos[0]) * scaleSpeed
+            yDiff = (object.relPos.y - pos[1]) * scaleSpeed
+            object.relPos.x = pos[0] + xDiff
+            object.relPos.y = pos[1] + yDiff
         scale *= scaleSpeed
     if button == mouse.WHEEL_DOWN:
         for object in objects:
-            xDiff = (object.GetPos().x + object.offset.x - pos[0]) / scaleSpeed
-            yDiff = (object.GetPos().y + object.offset.y - pos[1]) / scaleSpeed
-            print(f"{object.GetPos().GetVector()}\n{object.offset.GetVector()}\n{pos}\n{[xDiff,yDiff]}\n" )
-            object.offset.x = object.GetPos().x + pos[0] + xDiff
-            object.offset.y = object.GetPos().y + pos[1] + yDiff
+            xDiff = (object.relPos.x - pos[0]) / scaleSpeed
+            yDiff = (object.relPos.y - pos[1]) / scaleSpeed
+            object.relPos.x = pos[0] + xDiff
+            object.relPos.y = pos[1] + yDiff
 
         scale /= scaleSpeed
-    if mouse.RIGHT == button:
-        for object in objects:
-            object.CalculateNextPos()
-        for object in objects:
-            object.Update()
+
+
 def on_mouse_move(rel, buttons):
     if mouse.LEFT in buttons:
         for object in objects:
-            object.offset.x += rel[0]
-            object.offset.y += rel[1]
+            object.relPos.x += rel[0]
+            object.relPos.y += rel[1]
 
 
 
 
 def update(time):
-    global x
-    global y
-    x += random.randint(-5, 5) * scale
-    y += random.randint(-5,5) * scale
-
+    for object in objects:
+        object.CalculateNextPos(time)
+    for object in objects:
+        object.Update()
 
 pgzrun.go()
 
