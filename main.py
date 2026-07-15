@@ -88,11 +88,11 @@ class Object:
             if distance != 0:
                 dir = difference.GetNormalized()
                 force = (G * self.GetMass() * object.GetMass())/(distance ** 2)
-                vectorForce += dir * force
+                vectorForce += (dir * force)
 
         acceleration = vectorForce / self.mass
-        self.nextVel = self.currentVel + acceleration * time/100000000
-        print(self.nextVel.GetVector() if self.name == "earth" else "")
+        self.nextVel = self.currentVel + (acceleration * time)
+
 
 
     # Returns current position as a Vector
@@ -139,12 +139,16 @@ class Object:
             self.radius = radius
 
     # Updates the currentPos and currentVel of the object
-    def Update(self) -> None:
+    def Update(self,time) -> None:
 
 
         self.currentVel = self.nextVel
-        self.currentPos += self.currentVel
-        self.relPos += self.currentVel * scale
+        self.currentPos += (self.currentVel * time)
+        self.relPos += self.currentVel * scale * time
+        if self.name == "earth":
+            print(self.relPos.GetVector(), "\n")
+        else:
+            print(self.relPos.GetVector() )
 
 
 app = tkinter.Tk()
@@ -167,8 +171,8 @@ scale = 0.0001
 right = True
 fullscreen = False
 objects = []
-objects.append(Object("earth", "#00ff00", 5972000000000000000000000, 6000000))
 objects.append(Object("Sun","#ffdf22", 1989000000000000000000000000000,695700000,Vector(100000,0)))
+objects.append(Object("earth", "#00ff00", 5972000000000000000000000, 6000000))
 def draw():
     global fullscreen
     if not fullscreen:
@@ -211,7 +215,7 @@ def update(time):
     for object in objects:
         object.CalculateNextPos(time)
     for object in objects:
-        object.Update()
+        object.Update(time)
 
 pgzrun.go()
 
