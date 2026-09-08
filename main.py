@@ -74,7 +74,6 @@ class Object:
         self.force: Vector = Vector()
         self.nextPos: Vector = Vector()
         self.nextVel: Vector = Vector()
-        self.relPos: Vector = currentPos
 
     # Calculates the forces and gets the next position
     def CalculateNextPos(self,time) -> None:
@@ -145,56 +144,70 @@ class Object:
         self.currentVel = self.nextVel
         self.currentPos += self.currentVel * time
 
-
+# Finds the width and height of the screen
 app = tkinter.Tk()
 width = app.winfo_screenwidth()
 height = app.winfo_screenheight()
 app.destroy()
 
+#Sets the width and height to remove "large" mouse
 HEIGHT = height
 WIDTH = width
-"""
-planet = Actor("planet", (250,250))
-planet.scale = 0.01
-image = pygame.image.load('CarWhiteDragon256.png').convert_alpha()
-"""
-x = width/2
-y = height/2
+
+#Sets initial variables
 z = 1
 fullscreen = False
 offset  = Vector()
 center = Vector(width/2,height/2)
 objects = []
+
 """objects.append(Object("earth", "#00ff00", 1000000, 500))
 objects.append(Object("Sun","#ffdf22", 1000000,500,Vector(7000,-1000)))
 objects.append(Object("One","#ffdf88", 1000000,500,Vector(5000,3000)))"""
-for i in range(200):
-    objects.append(Object(str(i),"#ffffff",random.randint(5000,5000000000),random.randint(200,1000),Vector(random.randint(-10000,10000),random.randint(-10000,10000))))
 
+
+"""for i in range(200):
+    objects.append(Object(str(i),"#ffffff",random.randint(5000,5000000000),random.randint(200,1000),Vector(random.randint(-10000,10000),random.randint(-10000,10000))))"""
+
+objects.append(Object("One","#ffffff",1,2,Vector(3,0),Vector(0,0.1)))
+objects.append(Object("Two","#ffffff",1,2,Vector(-3,0),Vector(0,-0.1)))
+
+# Draws the objects onto the screen
 def draw():
+    # Makes the game fullscreen on the first frame, fixes it not going fullscreen when out of this and the violent flashes when not in the if statement
     global fullscreen
     if not fullscreen:
         screen.surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
         fullscreen = True
+
     screen.fill("#000010")
     for object in objects:
-        screen.draw.filled_circle(ProjectToScreen(object.currentPos) , object.GetRadius() / z,object.GetColour())
+        pos = ProjectToScreen(object.currentPos)
+        rad = object.GetRadius()/z
+        if not( pos[0] - rad >width or pos[0] + rad < 0 or pos[1] + rad < 0 or pos[1] - rad > height or rad < 1):
 
+            screen.draw.filled_circle(pos , rad, object.GetColour())
+
+#Turns the object position into the rendered position using the projection formula
 def ProjectToScreen(objectPos:Vector) -> Vector:
     return ((objectPos- offset) / z + center).GetVector()
 
+# Zooms in and out based on the mouse position
 def on_mouse_down(pos,button):
     global z,offset, center
     scaleSpeed = 1.1
+    # Moves the offset to look the same when center changes
     mouseDiff = Vector(pos[0] - center.x,  pos[1] - center.y)
     offset += mouseDiff * z
+    #Changes the center into the mouse position
     center = Vector(pos[0],pos[1])
+    #Zooms in/out
     if button == mouse.WHEEL_UP:
         z /= scaleSpeed
     if button == mouse.WHEEL_DOWN:
         z *= scaleSpeed
 
-
+# Pan the simulation
 def on_mouse_move(rel, buttons):
     global offset
     if mouse.LEFT in buttons:
@@ -202,13 +215,12 @@ def on_mouse_move(rel, buttons):
         offset.y -= rel[1] * z
 
 
-
-
+# Updates the simulation
 def update(time):
     for object in objects:
-        object.CalculateNextPos(time*50000)
+        object.CalculateNextPos(time*100)
     for object in objects:
-        object.Update(time*50000)
+        object.Update(time*100)
 
 pgzrun.go()
 
