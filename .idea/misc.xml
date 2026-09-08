@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< HEAD
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (Multiplanetary Simulator)" project-jdk-type="Python SDK" />
+=======
   <component name="Black">
     <option name="sdkName" value="Python 3.14 (Multiplanetary-Simulator)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (MultiPlanetarySimulator)" project-jdk-type="Python SDK" />
+>>>>>>> 85bbadcd5e90565eeea0a36f77ae23456dc0d85f
 </project>

@@ -88,11 +88,10 @@ class Object:
             if distance != 0:
                 dir = difference.GetNormalized()
                 force = (G * self.GetMass() * object.GetMass())/(distance ** 2)
-                vectorForce += (dir * force)
+                vectorForce += dir * force
 
         acceleration = vectorForce / self.mass
-        self.nextVel = self.currentVel + (acceleration * time)
-
+        self.nextVel = self.currentVel + acceleration * time
 
 
     # Returns current position as a Vector
@@ -135,20 +134,16 @@ class Object:
     def SetRadius(self, radius) -> None:
         if(type(radius) != float and type(radius) != int and radius <= 0):
             print("No")
+
         else:
             self.radius = radius
 
     # Updates the currentPos and currentVel of the object
-    def Update(self,time) -> None:
+    def Update(self, time) -> None:
 
 
         self.currentVel = self.nextVel
-        self.currentPos += (self.currentVel * time)
-        self.relPos += self.currentVel * scale * time
-        if self.name == "earth":
-            print(self.relPos.GetVector(), "\n")
-        else:
-            print(self.relPos.GetVector() )
+        self.currentPos += self.currentVel * time
 
 
 app = tkinter.Tk()
@@ -165,14 +160,17 @@ image = pygame.image.load('CarWhiteDragon256.png').convert_alpha()
 """
 x = width/2
 y = height/2
-xOffset = 0
-yOffset = 0
-scale = 0.0001
-right = True
+z = 1
 fullscreen = False
+offset  = Vector()
+center = Vector(width/2,height/2)
 objects = []
-objects.append(Object("Sun","#ffdf22", 1989000000000000000000000000000,695700000,Vector(100000,0)))
-objects.append(Object("earth", "#00ff00", 5972000000000000000000000, 6000000))
+"""objects.append(Object("earth", "#00ff00", 1000000, 500))
+objects.append(Object("Sun","#ffdf22", 1000000,500,Vector(7000,-1000)))
+objects.append(Object("One","#ffdf88", 1000000,500,Vector(5000,3000)))"""
+for i in range(200):
+    objects.append(Object(str(i),"#ffffff",random.randint(5000,5000000000),random.randint(200,1000),Vector(random.randint(-10000,10000),random.randint(-10000,10000))))
+
 def draw():
     global fullscreen
     if not fullscreen:
@@ -180,42 +178,37 @@ def draw():
         fullscreen = True
     screen.fill("#000010")
     for object in objects:
-        screen.draw.filled_circle(object.relPos.GetVector(), object.GetRadius() * scale,object.GetColour())
+        screen.draw.filled_circle(ProjectToScreen(object.currentPos) , object.GetRadius() / z,object.GetColour())
+
+def ProjectToScreen(objectPos:Vector) -> Vector:
+    return ((objectPos- offset) / z + center).GetVector()
 
 def on_mouse_down(pos,button):
-    global scale
+    global z,offset, center
     scaleSpeed = 1.1
+    mouseDiff = Vector(pos[0] - center.x,  pos[1] - center.y)
+    offset += mouseDiff * z
+    center = Vector(pos[0],pos[1])
     if button == mouse.WHEEL_UP:
-        for object in objects:
-            xDiff = (object.relPos.x - pos[0]) * scaleSpeed
-            yDiff = (object.relPos.y - pos[1]) * scaleSpeed
-            object.relPos.x = pos[0] + xDiff
-            object.relPos.y = pos[1] + yDiff
-        scale *= scaleSpeed
+        z /= scaleSpeed
     if button == mouse.WHEEL_DOWN:
-        for object in objects:
-            xDiff = (object.relPos.x - pos[0]) / scaleSpeed
-            yDiff = (object.relPos.y - pos[1]) / scaleSpeed
-            object.relPos.x = pos[0] + xDiff
-            object.relPos.y = pos[1] + yDiff
-
-        scale /= scaleSpeed
+        z *= scaleSpeed
 
 
 def on_mouse_move(rel, buttons):
+    global offset
     if mouse.LEFT in buttons:
-        for object in objects:
-            object.relPos.x += rel[0]
-            object.relPos.y += rel[1]
+        offset.x -= rel[0] * z
+        offset.y -= rel[1] * z
 
 
 
 
 def update(time):
     for object in objects:
-        object.CalculateNextPos(time)
+        object.CalculateNextPos(time*50000)
     for object in objects:
-        object.Update(time)
+        object.Update(time*50000)
 
 pgzrun.go()
 
