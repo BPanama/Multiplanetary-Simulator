@@ -6,7 +6,25 @@ import time
 import random
 import tkinter
 
+def ColourPick(col1,col2,rad1,rad2):
+    # Changes from 2-digit hex to integers
+    col1Red = int(col1[1:3],16)
+    col1Green = int(col1[3:5],16)
+    col1Blue = int(col1[5:7],16)
+    col2Red = int(col2[1:3],16)
+    col2Green = int(col2[3:5],16)
+    col2Blue = int(col2[5:7],16)
+    newColRed = (col1Red*rad1 + col2Red*rad2)//(rad1+rad2)
+    newColGreen = (col1Green*rad1 + col2Green*rad2)//(rad1+rad2)
+    newColBlue = (col1Blue * rad1 + col2Blue * rad2) // (rad1 + rad2)
+    print(col1Red,col1Green,col1Blue)
+    print(col2Red,col2Green,col2Blue)
+    print(newColRed,newColGreen,newColBlue)
+    newCol = f"#{hex(newColRed).split('x')[1].zfill(2)}{hex(newColGreen).split('x')[1].zfill(2)}{hex(newColBlue).split('x')[1].zfill(2)}"
+    return newCol
 
+
+print(ColourPick("#ffffff","#000000",3,2))
 # Vector class needed for calculations
 class Vector:
     def __init__(self, x: float = 0, y: float = 0) -> None:
@@ -74,6 +92,7 @@ class Object:
         self.force: Vector = Vector()
         self.nextPos: Vector = Vector()
         self.nextVel: Vector = Vector()
+        self.acceleration = Vector()
 
     # Calculates the forces and gets the next position
     def CalculateNextPos(self,time) -> None:
@@ -85,12 +104,16 @@ class Object:
 
             distance = difference.GetMagnitude()
             if distance != 0:
-                dir = difference.GetNormalized()
-                force = (G * self.GetMass() * object.GetMass())/(distance ** 2)
-                vectorForce += dir * force
+                if distance >= self.radius + object.radius:
+                    dir = difference.GetNormalized()
+                    force = (G * self.GetMass() * object.GetMass())/(distance ** 2)
+                    vectorForce += dir * force
+                else:
+                  self.Collide()
 
-        acceleration = vectorForce / self.mass
-        self.nextVel =  self.currentVel + acceleration * time
+        self.acceleration = vectorForce / self.mass
+
+        self.nextVel = self.currentVel + self.acceleration * time
 
 
     # Returns current position as a Vector
@@ -140,11 +163,12 @@ class Object:
     # Updates the currentPos and currentVel of the object
     def Update(self, time) -> None:
 
-
+        self.currentPos +=  self.currentVel * time +  self.acceleration *0.5 * time * time
         self.currentVel = self.nextVel
-        self.currentPos += self.currentVel * time
+    def Collide(self,other):
+        objects.append(Object(self.name+other.name, ))
 
-# Finds the width and height of the screen
+"""# Finds the width and height of the screen
 app = tkinter.Tk()
 width = app.winfo_screenwidth()
 height = app.winfo_screenheight()
@@ -161,13 +185,13 @@ offset  = Vector()
 center = Vector(width/2,height/2)
 objects = []
 
-"""objects.append(Object("earth", "#00ff00", 1000000, 500))
+""""""objects.append(Object("earth", "#00ff00", 1000000, 500))
 objects.append(Object("Sun","#ffdf22", 1000000,500,Vector(7000,-1000)))
-objects.append(Object("One","#ffdf88", 1000000,500,Vector(5000,3000)))"""
+objects.append(Object("One","#ffdf88", 1000000,500,Vector(5000,3000)))
 
 
-"""for i in range(200):
-    objects.append(Object(str(i),"#ffffff",random.randint(5000,5000000000),random.randint(200,1000),Vector(random.randint(-10000,10000),random.randint(-10000,10000))))"""
+for i in range(200):
+    objects.append(Object(str(i),"#ffffff",random.randint(5000,5000000000),random.randint(200,1000),Vector(random.randint(-10000,10000),random.randint(-10000,10000))))""""""
 
 objects.append(Object("One","#ffffff",3000000000000000000000000000000,20000000000,Vector(28867513459.48,0),Vector(0,63281.75)))
 objects.append(Object("Two","#ffffff",3000000000000000000000000000000,20000000000,Vector(-14433756729.74,25000000000.0),Vector(-54803.60,-31640.88)))
@@ -218,13 +242,13 @@ def on_mouse_move(rel, buttons):
 
 # Updates the simulation
 def update(time):
-    for i in range(100000):
+    for i in range(1000):
         for object in objects:
-            object.CalculateNextPos(0.01)
+            object.CalculateNextPos(10)
         for object in objects:
-            object.Update(0.01)
+            object.Update(10)
 
-pgzrun.go()
+pgzrun.go()"""
 
 """
 #region Variable Tests
