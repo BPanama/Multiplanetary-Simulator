@@ -5,7 +5,7 @@ import pygame
 import time
 import random
 import tkinter
-
+letterList = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
 def ColourPick(col1,col2,rad1,rad2):
     # Changes from 2-digit hex to integers
     col1Red = int(col1[1:3],16)
@@ -14,15 +14,16 @@ def ColourPick(col1,col2,rad1,rad2):
     col2Red = int(col2[1:3],16)
     col2Green = int(col2[3:5],16)
     col2Blue = int(col2[5:7],16)
-    newColRed = (col1Red*rad1 + col2Red*rad2)//(rad1+rad2)
-    newColGreen = (col1Green*rad1 + col2Green*rad2)//(rad1+rad2)
-    newColBlue = (col1Blue * rad1 + col2Blue * rad2) // (rad1 + rad2)
-    print(col1Red,col1Green,col1Blue)
-    print(col2Red,col2Green,col2Blue)
-    print(newColRed,newColGreen,newColBlue)
+    newColRed = int((col1Red*rad1 + col2Red*rad2)//(rad1+rad2))
+    newColGreen = int((col1Green*rad1 + col2Green*rad2)//(rad1+rad2))
+    newColBlue = int((col1Blue * rad1 + col2Blue * rad2) // (rad1 + rad2))
     newCol = f"#{hex(newColRed).split('x')[1].zfill(2)}{hex(newColGreen).split('x')[1].zfill(2)}{hex(newColBlue).split('x')[1].zfill(2)}"
     return newCol
 
+# Returns the new radius
+def RadPick(rad1,rad2):
+    rad3 = math.sqrt(rad1**2 + rad2 **2)
+    return rad3
 
 print(ColourPick("#ffffff","#000000",3,2))
 # Vector class needed for calculations
@@ -77,7 +78,7 @@ class Vector:
 
 # Object Class for all the planets, stars, etc
 class Object:
-    letterList = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
+
 
     def __init__(self, name, colour, mass, radius, currentPos=Vector(), currentVel=Vector()):
         self.name: str = name
@@ -93,6 +94,7 @@ class Object:
         self.nextPos: Vector = Vector()
         self.nextVel: Vector = Vector()
         self.acceleration = Vector()
+        self.isDestroyed = False
 
     # Calculates the forces and gets the next position
     def CalculateNextPos(self,time) -> None:
@@ -109,7 +111,8 @@ class Object:
                     force = (G * self.GetMass() * object.GetMass())/(distance ** 2)
                     vectorForce += dir * force
                 else:
-                  self.Collide()
+                    self.Collide(object)
+
 
         self.acceleration = vectorForce / self.mass
 
@@ -125,11 +128,12 @@ class Object:
 
     # Makes sure colour variable is in format #xxxxxx where x is between 0 and f for a hexadecimal format
     def SetColour(self, colour):
+        global letterList
         if (colour[0] != "#" or len(colour) != 7):
             raise "Colour needs to be formatted correctly"
         else:
             for char in colour[1:]:
-                if char.lower() not in self.letterList:
+                if char.lower() not in letterList:
                     raise "Colours only go from 0-f"
             self.colour = colour
 
@@ -163,12 +167,24 @@ class Object:
     # Updates the currentPos and currentVel of the object
     def Update(self, time) -> None:
 
-        self.currentPos +=  self.currentVel * time +  self.acceleration *0.5 * time * time
+        self.currentPos +=  (self.currentVel + self.nextVel) * time /2
         self.currentVel = self.nextVel
     def Collide(self,other):
-        objects.append(Object(self.name+other.name, ))
+        global newObjects
+        if( not other.isDestroyed):
+            self.isDestroyed = True
+            other.isDestroyed = True
+            newName = self.name + other.name
+            newColour = ColourPick(self.colour,other.colour,self.radius,other.radius)
+            newMass  = self.mass + other.mass
+            newRadius = RadPick(self.radius, other.radius)
+            newPos = (self.currentPos * self.radius + other.currentPos * other.radius) / (self.radius + other.radius)
+            newVel = (self.currentVel * self.mass + other.currentVel * other.mass) / newMass
+            newObjects.append(Object(newName,newColour,newMass,newRadius,newPos,newVel))
 
-"""# Finds the width and height of the screen
+
+
+# Finds the width and height of the screen
 app = tkinter.Tk()
 width = app.winfo_screenwidth()
 height = app.winfo_screenheight()
@@ -185,18 +201,53 @@ offset  = Vector()
 center = Vector(width/2,height/2)
 objects = []
 
-""""""objects.append(Object("earth", "#00ff00", 1000000, 500))
-objects.append(Object("Sun","#ffdf22", 1000000,500,Vector(7000,-1000)))
-objects.append(Object("One","#ffdf88", 1000000,500,Vector(5000,3000)))
+# Sun
+objects.append(Object("Sun", "#FDB813", 1988500000000000000000000000000, 695700000,
+                      Vector(0, 0), Vector(0, 0)))
+
+# Planets
+objects.append(Object("Mercury", "#A6A6A6", 330110000000000000000000, 2439700,
+                      Vector(57910000000, 0), Vector(0, 47870)))
+
+objects.append(Object("Venus", "#E6C27A", 4867500000000000000000000, 6051800,
+                      Vector(108200000000, 0), Vector(0, 35020)))
+
+objects.append(Object("Earth", "#2878B5", 5972200000000000000000000, 6371000,
+                      Vector(149600000000, 0), Vector(0, 29780)))
+
+objects.append(Object("Mars", "#C1440E", 641710000000000000000000, 3389500,
+                      Vector(227900000000, 0), Vector(0, 24077)))
+
+objects.append(Object("Jupiter", "#D2B48C", 1898200000000000000000000000, 69911000,
+                      Vector(778500000000, 0), Vector(0, 13070)))
+
+objects.append(Object("Saturn", "#EAD6A6", 568340000000000000000000000, 58232000,
+                      Vector(1433000000000, 0), Vector(0, 9680)))
+
+objects.append(Object("Uranus", "#7FFFD4", 86810000000000000000000000, 25362000,
+                      Vector(2872000000000, 0), Vector(0, 6800)))
+
+objects.append(Object("Neptune", "#4166F5", 102413000000000000000000000, 24622000,
+                      Vector(4495000000000, 0), Vector(0, 5430)))
+
+# Dwarf planet
+objects.append(Object("Pluto", "#C9B29B", 13030000000000000000000, 1188300,
+                      Vector(5906000000000, 0), Vector(0, 4740)))
+
+# Earth's Moon
+objects.append(Object("Moon", "#BDBDBD", 73420000000000000000000, 1737400,
+                      Vector(149984400000, 0), Vector(0, 30802)))
 
 
-for i in range(200):
-    objects.append(Object(str(i),"#ffffff",random.randint(5000,5000000000),random.randint(200,1000),Vector(random.randint(-10000,10000),random.randint(-10000,10000))))""""""
-
-objects.append(Object("One","#ffffff",3000000000000000000000000000000,20000000000,Vector(28867513459.48,0),Vector(0,63281.75)))
-objects.append(Object("Two","#ffffff",3000000000000000000000000000000,20000000000,Vector(-14433756729.74,25000000000.0),Vector(-54803.60,-31640.88)))
-objects.append(Object("Three","#ffffff",3000000000000000000000000000000,20000000000,Vector(-14433756729.74,-25000000000.0),Vector(54803.60,-31640.88)))
-
+"""
+for i in range(500):
+    objects.append(Object(str(i),f"#{hex(random.randint(0,255)).split('x')[1].zfill(2)}{hex(random.randint(0,255)).split('x')[1].zfill(2)}{hex(random.randint(0,255)).split('x')[1].zfill(2)}",random.randint(5000,5000000000),random.randint(200,1000),Vector(random.randint(-100000,100000),random.randint(-100000,100000)),Vector(random.randint(-10000,10000),random.randint(-10000,10000))))
+"""
+"""
+objects.append(Object("One","#ff0000",3000000000000000000000000000000,20000000000,Vector(28867513459.48,0),Vector(0,63281.75)))
+objects.append(Object("Two","#00ff00",3000000000000000000000000000000,20000000000,Vector(-14433756729.74,25000000000.0),Vector(-54803.60,-31640.88)))
+objects.append(Object("Three","#0000ff",3000000000000000000000000000000,20000000000,Vector(-14433756729.74,-25000000000.0),Vector(54803.60,-31640.88)))
+"""
 # Draws the objects onto the screen
 def draw():
     # Makes the game fullscreen on the first frame, fixes it not going fullscreen when out of this and the violent flashes when not in the if statement
@@ -241,116 +292,18 @@ def on_mouse_move(rel, buttons):
 
 
 # Updates the simulation
+newObjects = []
 def update(time):
-    for i in range(1000):
-        for object in objects:
-            object.CalculateNextPos(10)
-        for object in objects:
-            object.Update(10)
+    global newObjects, objects
+    print(objects[1].currentPos.GetVector())
+    newObjects = []
+    for object in objects:
+        object.CalculateNextPos(time*1000000)
+    for object in objects:
+        object.Update(time*1000000)
+    for object in objects:
+        if (not object.isDestroyed):
+            newObjects.append(object)
+    objects = newObjects
 
-pgzrun.go()"""
-
-"""
-#region Variable Tests
-
-object1 = Object("earth", "#ffffff", 5972000000000000000000000, 6000000)
-print("\nColour Tests \n")
-try:
-    object1.SetColour("orange")
-    print("Accepted")
-except:
-    print("Rejected")
-
-try:
-    object1.SetColour("#000000")
-    print("Accepted")
-except:
-    print("Rejected")
-
-try:
-    object1.SetColour("#555555")
-    print("Accepted")
-except:
-    print("Rejected")
-
-try:
-    object1.SetColour("#GGGGGG")
-    print("Accepted")
-except:
-    print("Rejected")
-
-try:
-    object1.SetColour("test")
-    print("Accepted")
-except:
-    print("Rejected")
-
-print("\nMass Tests \n")
-try:
-    object1.SetMass(0)
-    print("Accepted")
-except:
-    print("Rejected")
-try:
-    object1.SetMass(10000000000)
-    print("Accepted")
-except:
-    print("Rejected")
-try:
-    object1.SetMass(-5)
-    print("Accepted")
-except:
-    print("Rejected")
-try:
-    object1.SetMass("test")
-    print("Accepted")
-except:
-    print("Rejected")
-
-print("\nRadius Tests \n")
-try:
-    object1.SetRadius(0)
-    print("Accepted")
-except:
-    print("Rejected")
-try:
-    object1.SetRadius(10000000000)
-    print("Accepted")
-except:
-    print("Rejected")
-try:
-    object1.SetRadius(-5)
-    print("Accepted")
-except:
-    print("Rejected")
-try:
-    object1.SetRadius("test")
-    print("Accepted")
-except:
-    print("Rejected")
-
-print("\nVector Tests \n")
-
-try:
-    testVector = Vector(0,0)
-    print("Accepted")
-except:
-    print("Rejected")
-try:
-    testVector = Vector(100000, 100000)
-    print("Accepted")
-except:
-    print("Rejected")
-try:
-    testVector = Vector(-10, -10)
-    print("Accepted")
-except:
-    print("Rejected")
-try:
-    testVector = Vector("test", "test")
-    print("Accepted")
-except:
-    print("Rejected")
-
-#endregion
-"""
+pgzrun.go()
